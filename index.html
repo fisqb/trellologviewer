@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<title>Fishy Trello Log</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root,
+[data-theme="dark"] {
+    --bg: #1a1a1a;
+    --panel: #2a2a2a;
+    --panel-2: #232323;
+    --input-bg: #333;
+    --border: #444;
+    --text: #e0e0e0;
+    --text-dim: #ccc;
+    --text-muted: #777;
+    --accent: #ff8c00;
+    --accent-hover: #ffa733;
+    --accent-text: #1a1a1a;
+    --hover-selection: rgba(255, 140, 0, 0.25);
+    --selected-bg: rgba(255, 140, 0, 0.45);
+    --overlay-bg: rgba(0, 0, 0, 0.65);
+    --modal-bg: #2a2a2a;
+    --header-border: #3a3a3a;
+    --code-bg: #1f1f1f;
+    --code-border: #3a3a3a;
+    --code-color: #ffb066;
+    --ok: #22c55e;
+    --hover-btn-bg: #3a3a3a;
+    --copied-bg: #22c55e;
+    --preview-bg: #333;
+    --modal-body-bg: #1f1f1f;
+    --checkbox-bg: #3a3a3a;
+    --sr-focus: #ffb066;
+    --warning: #e0a020;
+    --import-accent: #3b82f6;
+    --import-accent-hover: #60a5fa;
+    --import-accent-text: #ffffff;
+    --add-bg: #143d1f;
+    --add-text: #7ee2a8;
+    --del-bg: #4a1a1f;
+    --del-text: #ff9aa6;
+    --ctx-text: #888;
+    --hunk-text: #b48ead;
+    --tag-bg: #333;
+    --tag-text: #ccc;
+    --tag-active-bg: #ff8c00;
+    --tag-active-text: #1a1a1a;
+    --author-bg: #3a2a4a;
+    --author-text: #d0b0ff;
+    --author-active-bg: #7a1aff;
+    --author-active-text: #fff;
+    --mark-bg: #ffd54f;
+    --mark-text: #1a1a1a;
+}
+
+[data-theme="light"] {
+    --bg: #f4f4f6;
+    --panel: #ffffff;
+    --panel-2: #f0f0f2;
+    --input-bg: #ffffff;
+    --border: #d0d0d5;
+    --text: #1a1a1a;
+    --text-dim: #444;
+    --text-muted: #777;
+    --accent: #d97706;
+    --accent-hover: #f59e0b;
+    --accent-text: #ffffff;
+    --hover-selection: rgba(217, 119, 6, 0.18);
+    --selected-bg: rgba(217, 119, 6, 0.35);
+    --overlay-bg: rgba(0, 0, 0, 0.45);
+    --modal-bg: #ffffff;
+    --header-border: #e2e2e6;
+    --code-bg: #f0f0f2;
+    --code-border: #d0d0d5;
+    --code-color: #a04a00;
+    --ok: #16a34a;
+    --hover-btn-bg: #ececef;
+    --copied-bg: #16a34a;
+    --preview-bg: #f7f7f9;
+    --modal-body-bg: #ececef;
+    --checkbox-bg: #ececef;
+    --sr-focus: #a04a00;
+    --warning: #c07000;
+    --import-accent: #2563eb;
+    --import-accent-hover: #3b82f6;
+    --import-accent-text: #ffffff;
+    --add-bg: #dcfce7;
+    --add-text: #14532d;
+    --del-bg: #fee2e2;
+    --del-text: #7f1d1d;
+    --ctx-text: #666;
+    --hunk-text: #795da3;
+    --tag-bg: #ececef;
+    --tag-text: #333;
+    --tag-active-bg: #d97706;
+    --tag-active-text: #fff;
+    --author-bg: #ede9fe;
+    --author-text: #4c1d95;
+    --author-active-bg: #7a1aff;
+    --author-active-text: #fff;
+    --mark-bg: #fde047;
+    --mark-text: #1a1a1a;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+}
+
+.header-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding-right: 60px;
+}
+
+.header-row h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.header-sub {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    width: 100%;
+}
+
+.header-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+.top-control {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 0 0 auto;
+}
+
+.top-control-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.top-control select {
+    padding: 4px 6px;
+    font-size: 0.8rem;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    min-width: 100px;
+    width: auto;
+}
+
+.help-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 5;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.help-btn:hover {
+    background: var(--accent);
+    color: var(--accent-text);
+}
+
+.help-btn:focus-visible {
+    outline: 2px solid var(--sr-focus);
+    outline-offset: 2px;
+}
+
+.panel {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.import-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.import-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.import-row label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    min-width: 100px;
+    display: block;
+}
+
+.import-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.import-status {
+    font-size: 0.85rem;
+    min-height: 1.2em;
+}
+
+.import-status.ok { color: var(--ok); }
+.import-status.err { color: #ff6b6b; }
+.import-status.loading { color: var(--import-accent); }
+
+input[type="file"],
+input[type="text"],
+input[type="search"],
+select,
+textarea {
+    width: 100%;
+    padding: 8px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: inherit;
+}
+
+input[type="file"] {
+    padding: 6px;
+    font-size: 0.85rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    box-shadow: 0 0 0 2px var(--sr-focus);
+}
+
+textarea {
+    min-height: 90px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    resize: vertical;
+}
+
+button {
+    font-family: inherit;
+}
+
+.mini-btn {
+    padding: 6px 10px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+}
+
+.mini-btn:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+.mini-btn.ghost {
+    background: var(--input-bg);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    font-weight: 400;
+}
+
+.mini-btn.ghost:hover {
+    background: var(--hover-btn-bg);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.mini-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mini-btn:focus-visible {
+    outline: 2px solid var(--sr-focus);
+    outline-offset: 2px;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    background: var(--import-accent);
+    color: var(--import-accent-text);
+    border: 1px solid var(--import-accent);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: inherit;
+    font-weight: 600;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.action-btn:hover {
+    background: var(--import-accent-hover);
+    border-color: var(--import-accent-hover);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-btn:focus-visible {
+    outline: 2px solid var(--sr-focus);
+    outline-offset: 2px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 12px;
+}
+
+.controls .top-control {
+    flex: 1;
+    min-width: 200px;
+}
+
+.stats {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    align-self: center;
+}
+
+.tagbar {
+    background: var(--panel);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-height: 52px;
+}
+
+.tagbar-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-right: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    cursor: pointer;
+    border: 1px solid transparent;
+    user-select: none;
+    transition: all 0.15s;
+}
+
+.tag:hover {
+    border-color: var(--accent);
+}
+
+.tag.active {
+    background: var(--tag-active-bg);
+    color: var(--tag-active-text);
+    border-color: var(--accent);
+}
+
+.tag.author {
+    background: var(--author-bg);
+    color: var(--author-text);
+}
+
+.tag.author.active {
+    background: var(--author-active-bg);
+    color: var(--author-active-text);
+    border-color: var(--author-active-bg);
+}
+
+.tag .count {
+    font-size: 0.7rem;
+    background: rgba(0, 0, 0, 0.15);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.tag.active .count {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.tag .remove {
+    font-size: 0.9rem;
+    line-height: 1;
+    opacity: 0.6;
+    margin-left: 2px;
+    padding: 0 2px;
+}
+
+.tag .remove:hover {
+    opacity: 1;
+}
+
+.tag-add {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: 4px;
+    flex: 1;
+    min-width: 260px;
+}
+
+.tag-add input {
+    min-width: 160px;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    flex: 1;
+}
+
+.tag-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: 8px;
+}
+
+.change {
+    background: var(--panel);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.change-header {
+    padding: 12px 16px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.change-header:hover {
+    background: var(--hover-btn-bg);
+}
+
+.date {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.author {
+    font-size: 0.75rem;
+    color: var(--author-text);
+    background: var(--author-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.author:hover {
+    border-color: var(--accent);
+}
+
+.author.active {
+    background: var(--author-active-bg);
+    color: var(--author-active-text);
+    border-color: var(--author-active-bg);
+}
+
+.badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--del-bg);
+    color: var(--del-text);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge.fmt {
+    background: var(--add-bg);
+    color: var(--add-text);
+}
+
+.badge.tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-transform: none;
+}
+
+.badge.tag:hover {
+    border-color: var(--accent);
+}
+
+.badge.tag.active {
+    background: var(--tag-active-bg);
+    color: var(--tag-active-text);
+    border-color: var(--accent);
+}
+
+.toggle {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.diff {
+    display: none;
+    padding: 12px 16px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.5;
+    background: var(--code-bg);
+}
+
+.diff.open {
+    display: block;
+}
+
+.diff .add {
+    background: var(--add-bg);
+    color: var(--add-text);
+    display: block;
+}
+
+.diff .del {
+    background: var(--del-bg);
+    color: var(--del-text);
+    display: block;
+}
+
+.diff .ctx {
+    color: var(--ctx-text);
+    display: block;
+}
+
+.diff .hunk {
+    color: var(--hunk-text);
+    font-weight: 600;
+    display: block;
+}
+
+.empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px;
+    font-size: 0.9rem;
+}
+
+.legend {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.legend .k {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--code-color);
+}
+
+mark {
+    background: var(--mark-bg);
+    color: var(--mark-text);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.help-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+}
+
+.help-overlay.hidden {
+    display: none;
+}
+
+.help-modal {
+    background: var(--modal-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.help-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--header-border);
+}
+
+.help-header h2 {
+    font-size: 1.05rem;
+    color: var(--accent);
+    margin: 0;
+}
+
+.help-body {
+    padding: 14px 18px 20px;
+    overflow-y: auto;
+}
+
+.help-section {
+    margin-bottom: 16px;
+}
+
+.help-section:last-child {
+    margin-bottom: 0;
+}
+
+.help-section h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.help-section ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin: 0;
+}
+
+.help-section li {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 3px;
+}
+
+.help-section code {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 0.78rem;
+    color: var(--code-color);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 4px;
+    font-family: inherit;
+}
+
+.icon-btn:hover {
+    color: var(--accent);
+}
+
+.icon-btn:focus-visible {
+    outline: 2px solid var(--sr-focus);
+    outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+    body { padding: 12px; }
+    .header-row { padding-right: 0; gap: 10px; }
+    .help-btn { top: 12px; right: 12px; }
+    .panel { padding: 14px; }
+    .tag-add { min-width: 100%; }
+    .stats { margin-left: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header-row">
+        <h1>Fishy Trello Log</h1>
+        <div class="header-controls">
+            <div class="top-control">
+                <label class="top-control-label" for="themeSelect">Theme</label>
+                <select id="themeSelect">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+        </div>
+        <div class="header-sub">Paste a Trello card JSON export to see who changed the description, when, and what exactly changed.</div>
+    </div>
+
+    <button class="help-btn" id="helpBtn" title="Help" aria-label="Help">?</button>
+
+    <div class="panel import-panel">
+        <div class="import-row">
+            <label for="fileInput">JSON file</label>
+            <input type="file" id="fileInput" accept=".json,application/json">
+        </div>
+
+        <div class="import-row">
+            <label for="pasteArea">Paste JSON</label>
+            <button id="loadPastedBtn" class="action-btn">Load pasted JSON</button>
+        </div>
+
+        <textarea id="pasteArea" placeholder='{"actions": [...]}'></textarea>
+
+        <div class="import-hint">
+            Open your Trello card JSON link in the browser, copy the whole file, and paste it above.
+        </div>
+
+        <div class="import-status" id="importStatus"></div>
+    </div>
+
+    <div class="controls">
+        <div class="top-control">
+            <label class="top-control-label" for="searchInput">Search inside diffs</label>
+            <input type="search" id="searchInput" placeholder="Cash, Skins, ID" disabled>
+        </div>
+        <button id="expandAll" class="mini-btn ghost" disabled>Expand all</button>
+        <button id="collapseAll" class="mini-btn ghost" disabled>Collapse all</button>
+        <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="tagbar" id="tagbar">
+        <span class="tagbar-label">Filters</span>
+        <span class="tag-hint" id="tagHint">No filters yet. Add a keyword below or click a tag badge on any change.</span>
+        <span class="tag-add">
+            <input type="text" id="tagInput" placeholder="Add filter (Cash, author:ID)" disabled>
+            <button id="tagAddBtn" class="mini-btn" disabled>+ Add</button>
+        </span>
+    </div>
+
+    <div class="legend">
+        <span><span class="k">+</span> added</span>
+        <span><span class="k">-</span> removed</span>
+        <span><span class="k">@@</span> context</span>
+        <span>meaningful change</span>
+        <span>formatting only</span>
+        <span>author filter</span>
+    </div>
+
+    <div id="output">
+        <div class="empty">Choose a JSON file or paste JSON to start</div>
+    </div>
+
+</div>
+
+<div class="help-overlay hidden" id="helpOverlay">
+    <div class="help-modal">
+        <div class="help-header">
+            <h2>Help</h2>
+            <button class="icon-btn" id="helpClose" aria-label="Close">✕</button>
+        </div>
+        <div class="help-body">
+            <div class="help-section">
+                <h3>Loading data</h3>
+                <ul>
+                    <li><b>JSON file</b> pick a Trello card export from disk.</li>
+                    <li><b>Paste JSON</b> open the URL in your browser, copy everything, paste it into the box and press Load pasted JSON. Most reliable.</li>
+                </ul>
+            </div>
+            <div class="help-section">
+                <h3>Search</h3>
+                <ul>
+                    <li>Looks inside every diff line and inside the author ID.</li>
+                    <li>Case-insensitive, highlights matches in yellow.</li>
+                    <li>While searching, all changes are auto-expanded.</li>
+                </ul>
+            </div>
+            <div class="help-section">
+                <h3>Filters</h3>
+                <ul>
+                    <li>Type a keyword and press <code>+ Add</code> or Enter to create a filter chip.</li>
+                    <li>Add multiple keywords at once: <code>Cash Skins</code> or <code>Cash, Skins</code>.</li>
+                    <li>Use <code>author:ID</code> to filter by the author Trello member ID.</li>
+                    <li>All keyword filters are combined with <b>AND</b>. Multiple author filters are combined with <b>OR</b>.</li>
+                    <li>Click a tag badge on any change to add or remove it from filters.</li>
+                    <li>Click the <code>x</code> on a chip to remove that filter.</li>
+                </ul>
+            </div>
+            <div class="help-section">
+                <h3>Reading the diff</h3>
+                <ul>
+                    <li><b>+</b> added lines</li>
+                    <li><b>-</b> removed lines</li>
+                    <li><b>meaningful</b> real content changed.</li>
+                    <li><b>formatting</b> only whitespace or commas moved.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const fileInput     = document.getElementById('fileInput');
+const pasteArea     = document.getElementById('pasteArea');
+const loadPastedBtn = document.getElementById('loadPastedBtn');
+const importStatus  = document.getElementById('importStatus');
+const searchInput   = document.getElementById('searchInput');
+const expandAllBtn  = document.getElementById('expandAll');
+const collapseAllBtn= document.getElementById('collapseAll');
+const output        = document.getElementById('output');
+const statsEl       = document.getElementById('stats');
+const tagbar        = document.getElementById('tagbar');
+const tagInput      = document.getElementById('tagInput');
+const tagAddBtn     = document.getElementById('tagAddBtn');
+const tagHint       = document.getElementById('tagHint');
+const themeSelect   = document.getElementById('themeSelect');
+const helpBtn       = document.getElementById('helpBtn');
+const helpOverlay   = document.getElementById('helpOverlay');
+const helpClose     = document.getElementById('helpClose');
+
+let allChanges = [];
+let activeTags = [];
+let activeAuthors = [];
+
+themeSelect.addEventListener('change', () => {
+  document.documentElement.setAttribute('data-theme', themeSelect.value);
+});
+
+helpBtn.addEventListener('click', () => helpOverlay.classList.remove('hidden'));
+helpClose.addEventListener('click', () => helpOverlay.classList.add('hidden'));
+helpOverlay.addEventListener('click', (e) => {
+  if (e.target === helpOverlay) helpOverlay.classList.add('hidden');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') helpOverlay.classList.add('hidden');
+});
+
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    setStatus('Reading file...', 'loading');
+    const data = JSON.parse(text);
+    setStatus(`Loaded ${file.name}`, 'ok');
+    processData(data);
+  } catch (err) {
+    setStatus(`Failed to read file: ${err.message}`, 'err');
+  }
+});
+
+loadPastedBtn.addEventListener('click', () => {
+  const text = pasteArea.value.trim();
+  if (!text) { setStatus('Paste area is empty', 'err'); return; }
+  try {
+    const data = JSON.parse(text);
+    setStatus('Loaded pasted JSON', 'ok');
+    processData(data);
+  } catch (err) {
+    setStatus(`Invalid JSON: ${err.message}`, 'err');
+  }
+});
+
+searchInput.addEventListener('input', render);
+expandAllBtn.addEventListener('click', () => toggleAll(true));
+collapseAllBtn.addEventListener('click', () => toggleAll(false));
+
+tagAddBtn.addEventListener('click', () => {
+  const raw = tagInput.value.trim();
+  if (!raw) return;
+  const parts = raw.split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+  for (const p of parts) {
+    const authorMatch = p.match(/^author:(.+)$/i);
+    if (authorMatch) {
+      const authorId = authorMatch[1];
+      if (!activeAuthors.some(a => a.toLowerCase() === authorId.toLowerCase())) {
+        activeAuthors.push(authorId);
+      }
+    } else {
+      if (!activeTags.some(t => t.toLowerCase() === p.toLowerCase())) {
+        activeTags.push(p);
+      }
+    }
+  }
+  tagInput.value = '';
+  renderTagbar();
+  render();
+});
+
+tagInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); tagAddBtn.click(); }
+});
+
+function setStatus(msg, cls) {
+  importStatus.textContent = msg;
+  importStatus.className = 'import-status' + (cls ? ' ' + cls : '');
+}
+
+function processData(data) {
+  const actions = data.actions || [];
+  allChanges = [];
+
+  for (const a of actions) {
+    if (a.type !== 'updateCard') continue;
+    const oldDesc = a.data?.old?.desc;
+    const newDesc = a.data?.card?.desc;
+    if (oldDesc == null || newDesc == null || oldDesc === newDesc) continue;
+
+    const diff = unifiedDiff(oldDesc, newDesc);
+    const meta = classifyDiff(diff);
+    allChanges.push({
+      date: a.date,
+      author: a.idMemberCreator,
+      diff,
+      ...meta
+    });
+  }
+
+  allChanges.sort((a, b) => b.date.localeCompare(a.date));
+
+  searchInput.disabled = false;
+  expandAllBtn.disabled = false;
+  collapseAllBtn.disabled = false;
+  tagInput.disabled = false;
+  tagAddBtn.disabled = false;
+  statsEl.textContent = `Total description changes: ${allChanges.length}`;
+  renderTagbar();
+  render();
+}
+
+function classifyDiff(diffLines) {
+  const changed = diffLines.filter(l => (l.startsWith('+') || l.startsWith('-')) && !l.startsWith('+++') && !l.startsWith('---'));
+  const meaningful = changed.some(l => {
+    const body = l.slice(1);
+    return body.replace(/[\s,]+/g, '') !== '';
+  });
+  return { meaningful };
+}
+
+function unifiedDiff(oldText, newText) {
+  const a = oldText.split('\n');
+  const b = newText.split('\n');
+  const n = a.length, m = b.length;
+
+  const dp = [];
+  for (let i = 0; i <= n; i++) dp.push(new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j]
+        ? dp[i + 1][j + 1] + 1
+        : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+
+  const out = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { out.push(' ' + a[i]); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push('-' + a[i]); i++; }
+    else { out.push('+' + b[j]); j++; }
+  }
+  while (i < n) { out.push('-' + a[i]); i++; }
+  while (j < m) { out.push('+' + b[j]); j++; }
+
+  return out;
+}
+
+function renderTagbar() {
+  tagbar.querySelectorAll('.tag').forEach(el => el.remove());
+
+  const anchor = document.getElementById('tagHint');
+
+  if (!activeTags.length && !activeAuthors.length) {
+    anchor.style.display = '';
+    return;
+  }
+  anchor.style.display = 'none';
+
+  activeAuthors.forEach(author => {
+    const count = countChangesForAuthor(author);
+    const el = document.createElement('span');
+    el.className = 'tag author active';
+    el.innerHTML = `author:${escapeHtml(author)} <span class="count">${count}</span> <span class="remove" title="Remove">x</span>`;
+    el.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove')) {
+        activeAuthors = activeAuthors.filter(a => a !== author);
+      } else {
+        return;
+      }
+      renderTagbar();
+      render();
+    });
+    tagbar.insertBefore(el, anchor);
+  });
+
+  activeTags.forEach(tag => {
+    const count = countChangesForTag(tag);
+    const el = document.createElement('span');
+    el.className = 'tag active';
+    el.innerHTML = `${escapeHtml(tag)} <span class="count">${count}</span> <span class="remove" title="Remove">x</span>`;
+    el.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove')) {
+        activeTags = activeTags.filter(t => t !== tag);
+      } else {
+        return;
+      }
+      renderTagbar();
+      render();
+    });
+    tagbar.insertBefore(el, anchor);
+  });
+}
+
+function countChangesForTag(tag) {
+  const q = tag.toLowerCase();
+  return allChanges.filter(c =>
+    c.diff.some(line => line.toLowerCase().includes(q))
+  ).length;
+}
+
+function countChangesForAuthor(author) {
+  return allChanges.filter(c => c.author === author).length;
+}
+
+function render() {
+  const query = searchInput.value.trim().toLowerCase();
+  let list = allChanges;
+
+  if (activeTags.length) {
+    list = list.filter(c =>
+      activeTags.every(tag => {
+        const q = tag.toLowerCase();
+        return c.diff.some(line => line.toLowerCase().includes(q));
+      })
+    );
+  }
+
+  if (activeAuthors.length) {
+    list = list.filter(c =>
+      activeAuthors.some(a => a.toLowerCase() === c.author.toLowerCase())
+    );
+  }
+
+  if (query) {
+    list = list.filter(c =>
+      c.diff.some(line => line.toLowerCase().includes(query)) ||
+      c.author.toLowerCase().includes(query)
+    );
+  }
+
+  if (!list.length) {
+    output.innerHTML = '<div class="empty">No changes match the current filters / search</div>';
+    return;
+  }
+
+  const html = list.map((c, idx) => {
+    const badge = c.meaningful
+      ? '<span class="badge">meaningful</span>'
+      : '<span class="badge fmt">formatting</span>';
+
+    const authorActive = activeAuthors.some(a => a.toLowerCase() === c.author.toLowerCase());
+    const authorClass = 'author' + (authorActive ? ' active' : '');
+    const authorBadge = `<span class="${authorClass}" data-author="${escapeHtml(c.author)}">${escapeHtml(c.author)}</span>`;
+
+    const tagBadges = activeTags
+      .filter(tag => c.diff.some(line => line.toLowerCase().includes(tag.toLowerCase())))
+      .map(tag => `<span class="badge tag active" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`)
+      .join(' ');
+
+    const diffHtml = c.diff.map(line => {
+      if (line.startsWith('+++') || line.startsWith('---')) return '';
+      let cls = 'ctx';
+      if (line.startsWith('@@')) cls = 'hunk';
+      else if (line.startsWith('+')) cls = 'add';
+      else if (line.startsWith('-')) cls = 'del';
+
+      let content = escapeHtml(line);
+      if (query) content = highlight(content, query);
+      for (const tag of activeTags) content = highlight(content, tag);
+      return `<span class="${cls}">${content}</span>`;
+    }).join('');
+
+    return `
+      <div class="change" data-idx="${idx}">
+        <div class="change-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <span class="date">${formatDate(c.date)}</span>
+          ${authorBadge}
+          ${badge}
+          ${tagBadges}
+          <span class="toggle">expand</span>
+        </div>
+        <div class="diff${(query || activeTags.length || activeAuthors.length) ? ' open' : ''}">${diffHtml}</div>
+      </div>`;
+  }).join('');
+
+  output.innerHTML = html;
+
+  output.querySelectorAll('.badge.tag').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const tag = el.dataset.tag;
+      activeTags = activeTags.filter(t => t !== tag);
+      renderTagbar();
+      render();
+    });
+  });
+
+  output.querySelectorAll('.author').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const author = el.dataset.author;
+      if (activeAuthors.some(a => a.toLowerCase() === author.toLowerCase())) {
+        activeAuthors = activeAuthors.filter(a => a.toLowerCase() !== author.toLowerCase());
+      } else {
+        activeAuthors.push(author);
+      }
+      renderTagbar();
+      render();
+    });
+  });
+
+  updateToggles();
+}
+
+function updateToggles() {
+  document.querySelectorAll('.change').forEach(ch => {
+    const diff = ch.querySelector('.diff');
+    const toggle = ch.querySelector('.toggle');
+    if (diff && toggle) {
+      toggle.textContent = diff.classList.contains('open') ? 'collapse' : 'expand';
+    }
+  });
+}
+
+function toggleAll(open) {
+  document.querySelectorAll('.diff').forEach(el => el.classList.toggle('open', open));
+  updateToggles();
+}
+
+document.addEventListener('click', (e) => {
+  const header = e.target.closest('.change-header');
+  if (header) setTimeout(updateToggles, 0);
+});
+
+function highlight(html, query) {
+  const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (!q) return html;
+  const re = new RegExp(`(${q})`, 'gi');
+  return html.replace(re, '<mark>$1</mark>');
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  const pad = x => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+</script>
+
+</body>
+</html>
